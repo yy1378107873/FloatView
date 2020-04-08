@@ -1,10 +1,12 @@
 package com.song.floatwindow;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.BounceInterpolator;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -32,6 +34,11 @@ public class FloatView extends FrameLayout implements View.OnTouchListener {
      */
     private float rawX;
     private float rawY;
+
+    /**
+     * 是否自动贴边
+     */
+    private boolean autoAlign = true;
 
     public FloatView(@NonNull Context context, View contentView,FloatViewCallBack callBack) {
         super(context);
@@ -91,7 +98,9 @@ public class FloatView extends FrameLayout implements View.OnTouchListener {
     }
 
     private void actionUp(MotionEvent event) {
-
+        if (autoAlign&&callBack!=null){
+            callBack.autoAlign(rawX);
+        }
     }
 
     private void actionOutSide(MotionEvent event) {
@@ -114,5 +123,6 @@ public class FloatView extends FrameLayout implements View.OnTouchListener {
 
     public interface FloatViewCallBack{
         void updateLocation(float x, float y);
+        void autoAlign(float rawX);
     }
 }

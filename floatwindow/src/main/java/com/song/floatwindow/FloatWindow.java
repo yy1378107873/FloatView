@@ -1,12 +1,15 @@
 package com.song.floatwindow;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.BounceInterpolator;
 
 /**
  * @author : songjun
@@ -103,6 +106,11 @@ public class FloatWindow {
         public void updateLocation(float offsetX, float offsetY) {
             FloatWindow.this.updateLocation(offsetX,offsetY);
         }
+
+        @Override
+        public void autoAlign(float rawX) {
+            FloatWindow.this.autoAlign(rawX);
+        }
     };
 
     /**
@@ -112,6 +120,33 @@ public class FloatWindow {
         layoutParams.x = (int) offsetX;
         layoutParams.y = (int) offsetY;
         windowManager.updateViewLayout(floatView, layoutParams);
+    }
+
+    /**
+     * 自动贴边
+     */
+    private void autoAlign(float rawX) {
+        float fromX = layoutParams.x;
+
+        if (rawX <= displayMetrics.widthPixels / 2) {
+            layoutParams.x = 0;
+        } else {
+            layoutParams.x = displayMetrics.widthPixels-floatView.getWidth();
+        }
+        //这里使用ValueAnimator来平滑计算起始X坐标到结束X坐标之间的值，并更新悬浮窗位置
+        ValueAnimator animator = ValueAnimator.ofFloat(fromX, layoutParams.x);
+        animator.setDuration(500);
+        animator.setInterpolator(new BounceInterpolator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                //这里会返回fromX ~ mLayoutParams.x之间经过计算的过渡值
+                float toX = (float) animation.getAnimatedValue();
+                //我们直接使用这个值来更新悬浮窗位置
+                updateLocation(toX, layoutParams.y);
+            }
+        });
+        animator.start();
     }
 
     /**
